@@ -21,7 +21,7 @@ pipeline {
 
         stage('Archive Artifacts') {
             steps {
-                archiveArtifacts artifacts: 'data/dataset.txt', fingerprint: true
+                archiveArtifacts artifacts: 'data/dataset.csv', fingerprint: true
             }
         }
     }
