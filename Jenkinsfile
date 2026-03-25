@@ -1,10 +1,32 @@
 pipeline {
     agent any
+
     stages {
-        stage('Stage 1') {
+        stage('Checkout') {
             steps {
-                echo 'Hello world!'
+                checkout scm
             }
+        }
+
+        stage('Download and Process Dataset') {
+            steps {
+                sh './scripts/download_and_process.sh'
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'data/final_dataset.txt', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline zakończony sukcesem.'
+        }
+        failure {
+            echo 'Pipeline zakończony niepowodzeniem.'
         }
     }
 }
