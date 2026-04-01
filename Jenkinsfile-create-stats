@@ -1,0 +1,38 @@
+pipeline {
+    agent {
+        docker {
+            image 'julaga18/ium:2.0'
+            alwaysPull true
+            args '-u root -v /tmp:/tmp -e UV_CACHE_DIR=/tmp/uv-cache'
+        }
+    }
+
+    parameters {
+        string(name: 'CUTOFF', defaultValue: '10', description: 'Liczba rekordów do analizy statystyk')
+    }
+
+    environment {
+        UV_CACHE_DIR = "/tmp/uv-cache"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Calculate Stats') {
+            steps {
+                echo "Uruchamiam statystyki na gotowym obrazie julaga18/ium:2.0..."
+                sh "uv run scripts/download_and_process.sh ${params.CUTOFF}"
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'data/dataset.csv', fingerprint: true
+            }
+        }
+    }
+}
