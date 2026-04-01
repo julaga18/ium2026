@@ -18,9 +18,8 @@ pipeline {
         }
         stage('Data Processing') {
             steps {
-                sh 'chmod +x scripts/download_and_process.sh'
-                
-                sh 'uv run scripts/download_and_process.sh 10'
+                echo "Uruchamiam przygotowanie danych (Python)..."
+                sh 'uv run python3 scripts/create_dataset.py'
             }
         }
         stage('Artifact') {
