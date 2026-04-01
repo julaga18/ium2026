@@ -7,7 +7,8 @@ pipeline {
         } 
     }
     environment { 
-        UV_CACHE_DIR = "${WORKSPACE}/.uv_cache" 
+        UV_CACHE_DIR = "/tmp/uv-cache"
+        UV_PYTHON_INSTALL_DIR = "/tmp/uv-python"
     }
     stages {
         stage('Checkout') {
@@ -17,6 +18,8 @@ pipeline {
         }
         stage('Data Processing') {
             steps {
+                sh 'chmod +x scripts/download_and_process.sh'
+                
                 sh 'uv run scripts/download_and_process.sh 10'
             }
         }
