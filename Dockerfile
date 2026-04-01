@@ -5,22 +5,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir pandas kaggle
-
-# --- KONFIGURACJA KAGGLE ---
-# 1. Tworzymy wymagany folder w katalogu domowym użytkownika root
-RUN mkdir -p /root/.config/kaggle
-
-# 2. Kopiujemy plik z Twojego komputera do kontenera
-COPY kaggle.json /root/.config/kaggle/kaggle.json
-
-# 3. Nadajemy uprawnienia (tylko odczyt/zapis dla właściciela)
-RUN chmod 600 /root/.config/kaggle/kaggle.json
-# ---------------------------
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
+
 COPY . .
+
+RUN uv sync
+
+RUN chmod +x scripts/download_and_process.sh
 
 CMD ["/bin/bash"]
