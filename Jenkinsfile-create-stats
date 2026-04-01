@@ -1,36 +1,22 @@
 pipeline {
     agent {
         docker {
-            image 'julaga18/ium:2.0'
+            image 'julaga18/ium:2.0' 
             alwaysPull true
-            args '-u root -v /tmp:/tmp -e UV_CACHE_DIR=/tmp/uv-cache'
+            args '-u root -v /tmp:/tmp -e UV_CACHE_DIR=/tmp/uv-cache -e UV_PYTHON_INSTALL_DIR=/tmp/uv-python'
         }
     }
-
-    parameters {
-        string(name: 'CUTOFF', defaultValue: '10', description: 'Liczba rekordów do analizy statystyk')
-    }
-
-    environment {
-        UV_CACHE_DIR = "/tmp/uv-cache"
-    }
-
     stages {
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
-
         stage('Calculate Stats') {
             steps {
-                echo "Uruchamiam statystyki na gotowym obrazie julaga18/ium:2.0..."
-                sh 'chmod +x scripts/download_and_process.sh'
-                sh "uv run scripts/download_and_process.sh ${params.CUTOFF}"
+                echo "Obliczanie statystyk i normalizacja..."
+                sh 'uv run python3 scripts/process_data.py'
             }
         }
-
-        stage('Archive Artifacts') {
+        stage('Artifact') {
             steps {
                 archiveArtifacts artifacts: 'data/dataset.csv', fingerprint: true
             }
