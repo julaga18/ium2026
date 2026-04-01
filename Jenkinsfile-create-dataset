@@ -3,7 +3,7 @@ pipeline {
         dockerfile {
             filename 'Dockerfile'
             dir '.'
-            args '-v /tmp:/tmp -e UV_CACHE_DIR=/tmp/uv-cache'
+            args '-u root -v /tmp:/tmp -e UV_CACHE_DIR=/tmp/uv-cache -e UV_PYTHON_INSTALL_DIR=/tmp/uv-python'
         } 
     }
     environment { 
