@@ -25,6 +25,7 @@ pipeline {
         stage('Calculate Stats') {
             steps {
                 echo "Uruchamiam statystyki na gotowym obrazie julaga18/ium:2.0..."
+                sh 'chmod +x scripts/download_and_process.sh'
                 sh "uv run scripts/download_and_process.sh ${params.CUTOFF}"
             }
         }
