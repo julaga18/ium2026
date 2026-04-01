@@ -1,28 +1,29 @@
 pipeline {
-    agent any
-
-    parameters {
-        string(name: 'CUTOFF', defaultValue: '10', description: 'Liczba przykładów')
+    agent {
+        dockerfile {
+            filename 'Dockerfile'
+            dir '.'
+            args '-v /tmp:/tmp -e UV_CACHE_DIR=/tmp/uv-cache'
+        } 
     }
-
+    environment { 
+        UV_CACHE_DIR = "${WORKSPACE}/.uv_cache" 
+    }
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
-        stage('Generate Dataset') {
+        stage('Data Processing') {
             steps {
-                sh 'chmod +x scripts/download_and_process.sh'
-                sh "./scripts/download_and_process.sh ${params.CUTOFF}"
+                sh 'uv run scripts/download_and_process.sh 10'
             }
         }
-
-        stage('Archive Artifacts') {
+        stage('Artifact') {
             steps {
                 archiveArtifacts artifacts: 'data/dataset.csv', fingerprint: true
             }
         }
-    }
+    }   
 }
