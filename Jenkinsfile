@@ -23,14 +23,14 @@ pipeline {
                         if (env.BRANCH_NAME == 'main') {
                             sh """
                             echo "TRAINING | EPOCHS=${EPOCHS}"
-                            uv run python train.py --epochs ${EPOCHS}
+                            python train.py --epochs ${EPOCHS}
                             """
                         }
 
                         else if (env.BRANCH_NAME == 'eval') {
                             sh """
                             echo "EVALUATION"
-                            uv run python predict.py
+                            python predict.py
                             """
                         }
                     }
