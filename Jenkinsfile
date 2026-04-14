@@ -15,14 +15,24 @@ pipeline {
             }
         }
 
-        stage('Train Model') {
+        stage('Run') {
             steps {
                 script {
                     docker.image("diabetes-model").inside {
-                        sh """
-                        echo "Training with EPOCHS=${EPOCHS}"
-                        uv run python train.py --epochs ${EPOCHS}
-                        """
+
+                        if (env.BRANCH_NAME == 'main') {
+                            sh """
+                            echo "TRAINING | EPOCHS=${EPOCHS}"
+                            uv run python train.py --epochs ${EPOCHS}
+                            """
+                        }
+
+                        else if (env.BRANCH_NAME == 'eval') {
+                            sh """
+                            echo "EVALUATION"
+                            uv run python predict.py
+                            """
+                        }
                     }
                 }
             }
@@ -31,7 +41,7 @@ pipeline {
 
     post {
         success {
-            archiveArtifacts artifacts: 'model.pth', fingerprint: true
+            archiveArtifacts artifacts: '*.pth, *.csv, *.txt', fingerprint: true
         }
     }
 }
