@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        dockerfile true
+    }
 
     parameters {
         string(name: 'EPOCHS', defaultValue: '30', description: 'Liczba epok')
@@ -7,56 +9,49 @@ pipeline {
 
     stages {
 
-        stage('Build Docker Image') {
+        stage('Checkout') {
             steps {
-                script {
-                    docker.build("diabetes-model")
-                }
+                checkout scm
             }
         }
 
-        stage('Train') {
-            when {
-                branch 'main'
-            }
+        stage('Prepare workspace') {
             steps {
-                script {
-                    docker.image("diabetes-model").inside {
-                        sh """
-                        echo "TRAINING | EPOCHS=${EPOCHS}"
-                        python train.py --epochs ${EPOCHS}
-                        """
-                    }
-                }
+                sh "mkdir -p data"
             }
         }
 
-        stage('Eval') {
-            when {
-                branch 'eval'
-            }
+        stage('Train Model') {
             steps {
-                script {
+                sh """
+                echo "TRAINING | EPOCHS=${params.EPOCHS}"
+                python train.py --epochs ${params.EPOCHS}
+                """
+            }
+        }
 
-                    copyArtifacts(
-                        projectName: env.JOB_NAME,
-                        selector: lastSuccessful()
-                    )
+        stage('Predict') {
+            steps {
+                sh """
+                echo "PREDICTION"
+                python predict.py
+                """
+            }
+        }
 
-                    docker.image("diabetes-model").inside {
-                        sh """
-                        echo "EVALUATION"
-                        python predict.py
-                        """
-                    }
-                }
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: '*.csv, *.pkl, *.pth, data/*.csv, data/*.pth', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            archiveArtifacts artifacts: '*.csv, *.pkl, *.pth', fingerprint: true
+            echo "Pipeline finished successfully"
+        }
+        failure {
+            echo "Pipeline failed"
         }
     }
 }
