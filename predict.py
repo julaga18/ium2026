@@ -9,21 +9,16 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 class SimpleNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.net = nn.Sequential(
+        self.model = nn.Sequential(
             nn.Linear(21, 64),
-            nn.BatchNorm1d(64),
             nn.ReLU(),
-            nn.Dropout(0.2),
-
             nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Dropout(0.2),
-
             nn.Linear(32, 3)
         )
 
     def forward(self, x):
-        return self.net(x)
+        return self.model(x)
 
 X_test = pd.read_csv("X_test.csv").values
 y_true = pd.read_csv("y_test.csv").values.flatten()
