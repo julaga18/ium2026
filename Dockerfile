@@ -4,7 +4,8 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    TORCHINDUCTOR_CACHE_DIR=/tmp/torchinductor
 
 RUN apt-get update && apt-get install -y \
     curl \
@@ -12,6 +13,10 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install --upgrade pip && \
     pip install torch pandas scikit-learn seaborn joblib kagglehub
+
+RUN mkdir -p /tmp/torchinductor
+
+RUN useradd -u 1003 -m jenkins
 
 COPY . /app
 
