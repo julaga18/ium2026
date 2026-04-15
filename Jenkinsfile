@@ -15,24 +15,39 @@ pipeline {
             }
         }
 
-        stage('Run') {
+        stage('Train') {
+            when {
+                branch 'main'
+            }
             steps {
                 script {
                     docker.image("diabetes-model").inside {
+                        sh """
+                        echo "TRAINING | EPOCHS=${EPOCHS}"
+                        python train.py --epochs ${EPOCHS}
+                        """
+                    }
+                }
+            }
+        }
 
-                        if (env.BRANCH_NAME == 'main') {
-                            sh """
-                            echo "TRAINING | EPOCHS=${EPOCHS}"
-                            python train.py --epochs ${EPOCHS}
-                            """
-                        }
+        stage('Eval') {
+            when {
+                branch 'eval'
+            }
+            steps {
+                script {
 
-                        else if (env.BRANCH_NAME == 'eval') {
-                            sh """
-                            echo "EVALUATION"
-                            python predict.py
-                            """
-                        }
+                    copyArtifacts(
+                        projectName: env.JOB_NAME,
+                        selector: lastSuccessful()
+                    )
+
+                    docker.image("diabetes-model").inside {
+                        sh """
+                        echo "EVALUATION"
+                        python predict.py
+                        """
                     }
                 }
             }
@@ -41,7 +56,7 @@ pipeline {
 
     post {
         success {
-            archiveArtifacts artifacts: '*.pth, *.csv, *.txt', fingerprint: true
+            archiveArtifacts artifacts: '*.csv, *.pkl, *.pth', fingerprint: true
         }
     }
 }
