@@ -1,35 +1,20 @@
-import torch
-import torch.nn as nn
 import pandas as pd
-import joblib
 import numpy as np
+import mlflow.pyfunc
 
-from sklearn.metrics import (
-    classification_report,
-    accuracy_score,
-    confusion_matrix,
-    roc_auc_score
-)
-import mlflow.pytorch
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score
+import mlflow.pyfunc
 
-model = mlflow.pytorch.load_model("models:/DiabetesNN/1")
+model = mlflow.pyfunc.load_model("models:/DiabetesNN/latest")
 
-X_test = pd.read_csv("X_test.csv").values
+X_test = pd.read_csv("X_test.csv")
 y_true = pd.read_csv("y_test.csv").values.flatten()
 
-scaler = joblib.load("scaler.pkl")
-X_test = scaler.transform(X_test)
+result = model.predict(X_test)
 
-X_test = torch.tensor(X_test, dtype=torch.float32)
-
-model.eval()
-
-with torch.no_grad():
-    logits = model(X_test)
-    probs = torch.sigmoid(logits).numpy().flatten()
+probs = result["diabetes_probability"].values
 
 thresholds = np.linspace(0.01, 0.99, 200)
-
 f1_scores = []
 
 for t in thresholds:
@@ -45,27 +30,16 @@ for t in thresholds:
     f1 = 2 * precision * recall / (precision + recall + 1e-9)
     f1_scores.append(f1)
 
-best_idx = np.argmax(f1_scores)
-best_threshold = thresholds[best_idx]
+best_threshold = thresholds[np.argmax(f1_scores)]
 
-print(f"\nBest threshold (F1 optimized): {best_threshold:.4f}")
+print(f"\nBest threshold: {best_threshold:.4f}")
 
 predictions = (probs > best_threshold).astype(int)
 
-print("\nPrediction distribution:")
-print(np.bincount(predictions))
-
-print("\nAccuracy:")
-print(accuracy_score(y_true, predictions))
-
-print("\nROC AUC:")
-print(roc_auc_score(y_true, probs))
-
-print("\nClassification report:")
-print(classification_report(y_true, predictions))
-
-print("\nConfusion matrix:")
-print(confusion_matrix(y_true, predictions))
+print("\nAccuracy:", accuracy_score(y_true, predictions))
+print("\nROC AUC:", roc_auc_score(y_true, probs))
+print("\nConfusion matrix:\n", confusion_matrix(y_true, predictions))
+print("\nReport:\n", classification_report(y_true, predictions))
 
 pd.DataFrame({
     "Prediction": predictions,

@@ -33,7 +33,7 @@ pipeline {
         stage('Predict') {
             steps {
                 sh """
-                echo "PREDICTION"
+                echo "PREDICTION FROM REGISTRY"
                 python predict.py
                 """
             }
@@ -41,17 +41,15 @@ pipeline {
 
         stage('Archive Artifacts') {
             steps {
-                archiveArtifacts artifacts: '*.csv, *.pkl, *.pth, data/*.csv, data/*.pth', fingerprint: true
+                archiveArtifacts artifacts: 'artifacts/**', fingerprint: true
             }
         }
-    }
 
-    post {
-        success {
-            echo "Pipeline finished successfully"
-        }
-        failure {
-            echo "Pipeline failed"
-        }
+post {
+    success {
+        echo "Pipeline finished successfully"
+    }
+    failure {
+        echo "Pipeline failed"
     }
 }

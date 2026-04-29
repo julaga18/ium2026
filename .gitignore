@@ -1,3 +1,10 @@
 # Klucze API i konfiguracja Kaggle
 kaggle.json
 .kaggle/
+mlruns/
+__pycache__/
+*.pyc
+*.pkl
+*.pth
+X_test.csv
+y_test.csv
