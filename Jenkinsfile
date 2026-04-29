@@ -44,14 +44,14 @@ pipeline {
                 archiveArtifacts artifacts: 'artifacts/**', fingerprint: true
             }
         }
+    }
 
-post {
-    success {
-        echo "Pipeline finished successfully"
-    }
-    failure {
-        echo "Pipeline failed"
-    }
-}
+    post {
+        success {
+            echo "Pipeline finished successfully"
+        }
+        failure {
+            echo "Pipeline failed"
+        }
     }
 }
