@@ -3,9 +3,21 @@ import numpy as np
 import mlflow.pyfunc
 
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score
-import mlflow.pyfunc
+import mlflow
+from mlflow.tracking import MlflowClient
+import os
 
-model = mlflow.pyfunc.load_model("models:/DiabetesNN/latest")
+
+tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")
+registry_uri = os.getenv("MLFLOW_REGISTRY_URI", "sqlite:///mlflow_registry.db")
+
+mlflow.set_tracking_uri(tracking_uri)
+mlflow.set_registry_uri(registry_uri)
+
+client = MlflowClient()
+versions = client.search_model_versions("name='DiabetesNN'")
+latest_version = max(int(v.version) for v in versions)
+model = mlflow.pyfunc.load_model(f"models:/DiabetesNN/{latest_version}")
 
 X_test = pd.read_csv("X_test.csv")
 y_true = pd.read_csv("y_test.csv").values.flatten()
