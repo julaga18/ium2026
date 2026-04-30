@@ -126,7 +126,7 @@ with mlflow.start_run():
         logits = model(X_test)
         probs = torch.sigmoid(logits).numpy().flatten()
 
-    input_example = pd.DataFrame(X_test.numpy()[:3])
+    input_example = pd.DataFrame(X_test.numpy()[:3].astype("float64"))
 
     example_output = pd.DataFrame({
         "diabetes_probability": probs[:3],
@@ -169,8 +169,6 @@ with mlflow.start_run():
     - Accuracy: {acc:.4f}
     - ROC AUC: {auc:.4f}
 
-    ## Ograniczenia
-    Model działa tylko dla danych w tym samym formacie.
     """
 
     with open("model_card.md", "w") as f:
