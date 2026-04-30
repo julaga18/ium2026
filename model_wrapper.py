@@ -2,11 +2,10 @@ import mlflow.pyfunc
 import torch
 import pandas as pd
 import joblib
-
+from model_def import SimpleNN
 class DiabetesPyFuncModel(mlflow.pyfunc.PythonModel):
 
     def load_context(self, context):
-        from train import SimpleNN
 
         self.scaler = joblib.load(context.artifacts["scaler"])
 
@@ -26,6 +25,6 @@ class DiabetesPyFuncModel(mlflow.pyfunc.PythonModel):
             probs = torch.sigmoid(logits).numpy().flatten()
 
         return pd.DataFrame({
-            "probability": probs,
+            "diabetes_probability": probs,
             "prediction": (probs > 0.5).astype(int)
         })

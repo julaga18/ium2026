@@ -20,6 +20,7 @@ latest_version = max(int(v.version) for v in versions)
 model = mlflow.pyfunc.load_model(f"models:/DiabetesNN/{latest_version}")
 
 X_test = pd.read_csv("X_test.csv")
+X_test.columns = X_test.columns.astype(int)
 y_true = pd.read_csv("y_test.csv").values.flatten()
 
 result = model.predict(X_test)
