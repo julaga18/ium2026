@@ -3,10 +3,6 @@ pipeline {
         dockerfile true
     }
 
-    environment {
-        MLFLOW_TRACKING_URI = "http://mlflow:5000"
-    }
-
     parameters {
         string(name: 'EPOCHS', defaultValue: '30', description: 'Liczba epok')
     }
