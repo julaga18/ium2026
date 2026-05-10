@@ -13,5 +13,6 @@ dependencies = [
     "joblib",
     "numpy",
     "mlflow==2.12.1",
-    "protobuf==4.25.3"
+    "protobuf==4.25.3",
+    "dvc>=3.67.1",
 ]
