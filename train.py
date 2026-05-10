@@ -119,6 +119,14 @@ with mlflow.start_run():
     artifact_dir = "artifacts"
     os.makedirs(artifact_dir, exist_ok=True)
 
+    pd.DataFrame([{
+        "accuracy": acc,
+        "roc_auc": auc
+    }]).to_csv(f"{artifact_dir}/metrics.csv", index=False)
+
+    pd.DataFrame(X_test.numpy()).to_csv(f"{artifact_dir}/X_test.csv", index=False)
+    pd.DataFrame(y_test.numpy()).to_csv(f"{artifact_dir}/y_test.csv", index=False)
+
     torch.save(model.state_dict(), f"{artifact_dir}/model.pth")
     joblib.dump(scaler, f"{artifact_dir}/scaler.pkl")
 
@@ -126,7 +134,7 @@ with mlflow.start_run():
         logits = model(X_test)
         probs = torch.sigmoid(logits).numpy().flatten()
 
-    input_example = pd.DataFrame(X_test.numpy()[:3])
+    input_example = pd.DataFrame(X_test.numpy()[:3].astype("float64"))
 
     example_output = pd.DataFrame({
         "diabetes_probability": probs[:3],
@@ -138,18 +146,16 @@ with mlflow.start_run():
     client = MlflowClient()
 
     model_info = mlflow.pyfunc.log_model(
-    artifact_path="model",
-    python_model=DiabetesPyFuncModel(),
-    artifacts={
-        "model": f"{artifact_dir}/model.pth",
-        "scaler": f"{artifact_dir}/scaler.pkl"
-    },
-    signature=signature,
-    input_example=input_example,
-    registered_model_name="DiabetesNN"
+        artifact_path="model",
+        python_model=DiabetesPyFuncModel(),
+        artifacts={
+            "model": f"{artifact_dir}/model.pth",
+            "scaler": f"{artifact_dir}/scaler.pkl"
+        },
+        signature=signature,
+        input_example=input_example,
+        registered_model_name="DiabetesNN"
     )
-
-    os.makedirs("artifacts", exist_ok=True)
 
     model_card = f"""
     # DiabetesNN Model Card
@@ -168,19 +174,11 @@ with mlflow.start_run():
     ## Wyniki
     - Accuracy: {acc:.4f}
     - ROC AUC: {auc:.4f}
-
-    ## Ograniczenia
-    Model działa tylko dla danych w tym samym formacie.
     """
 
-    with open("model_card.md", "w") as f:
+    model_card_path = os.path.join(artifact_dir, "model_card.md")
+
+    with open(model_card_path, "w") as f:
         f.write(model_card)
 
-    mlflow.log_artifact("model_card.md")
-
-pd.DataFrame([{
-    "accuracy": acc,
-    "roc_auc": auc
-}]).to_csv("artifacts/metrics.csv", index=False)
-pd.DataFrame(X_test.numpy()).to_csv("X_test.csv", index=False)
-pd.DataFrame(y_test.numpy()).to_csv("y_test.csv", index=False)
+    mlflow.log_artifact(model_card_path)
