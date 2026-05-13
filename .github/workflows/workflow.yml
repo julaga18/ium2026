@@ -79,8 +79,8 @@ jobs:
             scikit-learn \
             joblib \
             mlflow==2.12.1 \
-            numpy \
-            torch --index-url https://download.pytorch.org/whl/cpu
+            numpy
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Download artifacts from train job
         uses: actions/download-artifact@v4
