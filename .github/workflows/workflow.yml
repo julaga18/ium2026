@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-
+          
       - name: Install dependencies
         run: |
           pip install --upgrade pip
@@ -32,8 +32,8 @@ jobs:
             scikit-learn \
             joblib \
             mlflow==2.12.1 \
-            numpy \
-            torch --index-url https://download.pytorch.org/whl/cpu
+            numpy
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
             
       - name: Verify training data
         run: |
